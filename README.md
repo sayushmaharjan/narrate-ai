@@ -1,129 +1,148 @@
-# Narrate AI — Personal Documentary Generator 🎬
+# Narrate AI
 
-> *Transform unstructured personal media (photos, videos, voice memos) into a cinematic documentary-style video with a coherent narrative, emotional arc, AI-generated narration, adaptive music, and ambient soundscapes.*
+**Turn personal photos, videos, and voice memos into narrated documentaries.**
 
-**Narrate AI** is a modular AI pipeline that acts as your personal documentary filmmaker. You simply upload unordered photos, videos, and rough voice memos, and the system automatically handles scene analysis, transcription, story arc construction, voice cloning, music scoring, ambient design, and final video assembly.
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white)
 
----
+Narrate AI analyzes media, drafts a story arc, synthesizes narration, adds music and ambient audio, and assembles a video through a four-step Streamlit workflow.
 
-## 🛠 Libraries and Tools Used
+[Output preview](#output-preview) · [Features](#features) · [Quick start](#quick-start) · [Usage](#usage) · [Evaluation](#evaluation) · [Documentation](#documentation)
 
-Narrate AI leverages a suite of state-of-the-art open-source and API-based models to handle multimodal processing:
+## Output preview
 
-### Core Pipeline Models
-*   **Visual Understanding**: [CLIP ViT-B/32](https://huggingface.co/openai/clip-vit-base-patch32) — Extracts scene types, emotion tags, objects, and visual salience scores from images and video frames.
-*   **Audio Understanding (ASR)**: [Whisper-small](https://huggingface.co/openai/whisper-small) — Transcribes raw voice memos and rough audio into timestamped text.
-*   **Narrative Engine**: [Groq API] — Constructs a cohesive 3-act documentary script, complete with emotional pacing and media ordering.
-*   **Voice Synthesis (TTS)**: [Chatterbox TTS](https://github.com/resemble-ai/chatterbox) (Resemble AI) — Synthesizes natural, emotional narration with support for **zero-shot voice cloning** (requires a reference `.wav` file).
-*   **Adaptive Music Generation**: [MusicGen-small](https://huggingface.co/facebook/musicgen-small) — Generates emotion-conditioned background music tailored to each specific scene/beat.
-*   **Ambient Soundscapes**: [AudioLDM2](https://huggingface.co/cvssp/audioldm2) — Generates scene-specific environmental audio (e.g., "crashing waves", "indoor crowd murmurs").
+### Narration sample
 
-### Engineering & UI Frameworks
-*   **Video Assembly**: [MoviePy](https://zulko.github.io/moviepy/) (powered by FFmpeg) — Renders the final MP4 with Ken Burns effects, crossfades, and a normalized 3-layer audio mix.
-*   **Web Interface**: [Streamlit](https://streamlit.io/) — Powers the sleek, 4-step interactive wizard UI.
-*   **Deep Learning Backend**: PyTorch and Hugging Face `transformers` / `diffusers`.
+The waveform below comes from a saved **7.56-second narration test**. Click it to open the WAV file.
 
----
+[![Waveform of the saved narration audio](docs/media/narration-waveform.png)](docs/media/narration.wav)
 
-## 🚀 Installation & Setup
+[Open or download the narration audio](docs/media/narration.wav)
 
-### Prerequisites
-*   **Python 3.10+** (A virtual environment or Conda environment is highly recommended)
-*   **FFmpeg** installed on your system:
-    *   Mac: `brew install ffmpeg`
-    *   Linux: `sudo apt install ffmpeg`
-*   At least 8GB RAM (16GB+ recommended to run all ML models locally)
-*   *(Optional but Recommended)* A GPU or Apple Silicon (M1/M2/M3) for accelerated inference.
+### Generated script
 
-### Step-by-Step Installation
+A separate saved script, **Into the Unknown**, defines three narrative beats with emotion, pacing, music, and ambient-sound instructions.
 
-1. **Clone the repository and navigate to the project directory:**
-   ```bash
-   git clone https://github.com/sayushmaharjan/narrate-ai.git
-   cd narrate-ai
-   ```
+| Act | Emotion | Suggested duration | Cut speed |
+|---|---|---:|---|
+| Setup | Excited | 5 seconds | Medium |
+| Peak | Joyful | 5 seconds | Fast |
+| Reflection | Nostalgic | 5 seconds | Slow |
 
-2. **Install the required Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-   *(Note: PyTorch will be installed automatically, but you may want to install the specific GPU-accelerated version for your system from the [PyTorch website](https://pytorch.org/).)*
+Opening narration from the saved script:
 
-3. **Set up your API Keys (Optional but required for the LLM Narrative Engine):**
-   ```bash
-   cp .env.example .env
-   # Edit .env and set GROQ_API_KEY.
-   ```
-   *If no API key is provided, the system gracefully falls back to a built-in 5-beat template script.*
+> As I stand here, the world stretches out before me like an endless canvas, waiting to be explored. The thrill of the unknown beckons, a siren's call to adventure. I take my first step, and the journey begins.
 
----
+[View the complete script JSON](docs/media/sample-script.json)
 
-## 🎮 Running the Application
+These samples demonstrate saved intermediate outputs. A rendered documentary video is not included yet; the narration test and script are separate samples.
 
-### Option 1: Streamlit Web UI (Recommended)
-Launch the interactive web application to use the 4-step documentary wizard:
+## Features
+
+- **Media understanding:** Analyze photos and video frames with CLIP; transcribe voice memos with Whisper.
+- **Script choices:** Generate three script variants, or supply your own narration text.
+- **Narration:** Chatterbox TTS with an optional reference voice.
+- **Soundtrack controls:** Select music mood and ambient scene, then adjust narration, music, and ambient volumes.
+- **Video assembly:** Combine selected media, motion effects, transitions, and mixed audio into an MP4.
+
+## Quick start
+
+### Requirements
+
+- Python 3.10 or later.
+- FFmpeg: `brew install ffmpeg` on macOS or `sudo apt install ffmpeg` on Ubuntu/Debian.
+- At least 8 GB RAM; 16 GB or more and a GPU are recommended for the local models.
+
+### Installation
+
+```bash
+git clone https://github.com/sayushmaharjan/narrate-ai.git
+cd narrate-ai
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+On Windows, activate the environment with `.venv\Scripts\activate`.
+
+Set `GROQ_API_KEY` in `.env` for the default narrative provider. To use Anthropic, set `ANTHROPIC_API_KEY` and change `LLM_PROVIDER` in [config.py](config.py). Without a configured key, the narrative stage uses a template fallback.
 
 ```bash
 streamlit run app.py
 ```
-*   The application will open in your browser at `http://localhost:8501`.
-*   You can upload your media, tweak music/ambient volumes, supply a voice clone reference, and preview the generated script before final rendering.
 
-### Option 2: Command Line Pipeline
-You can bypass the UI and run the orchestrator directly from a python script:
+Open `http://localhost:8501`.
+
+## Usage
+
+### Web interface
+
+1. **Upload:** Add photos, video clips, and optional voice memos or a voice reference.
+2. **Analyze:** Extract media descriptions and generate script options.
+3. **Customize:** Select a script, music mood, ambient scene, and audio levels.
+4. **Export:** Render and download the documentary.
+
+### Python pipeline
+
+The same two-stage pipeline used by the interface can be called directly:
 
 ```python
-from pipeline.orchestrator import run_pipeline
+from pipeline.orchestrator import run_pipeline_pre, run_pipeline_finalize
 
-result = run_pipeline(
-    photo_video_paths = ["beach.jpg", "wedding.mp4"],
-    audio_paths       = ["voice_memo.m4a"],
-    voice_reference_path = "my_voice.wav", # Optional for cloning
-    output_dir        = "my_documentary_output",
-    api_key           = "gsk_...",
-    music_mode        = "segment"
+preview = run_pipeline_pre(
+    photo_video_paths=["beach.jpg", "holiday.mp4"],
+    audio_paths=["voice_memo.m4a"],
+    output_dir="outputs",
+    event_hint="vacation",
+    target_duration_s=60,
 )
-print(f"Finished rendering: {result['output_video_path']}")
+
+result = run_pipeline_finalize(
+    pre_result=preview,
+    selected_version=0,
+    music_mood="cinematic",
+    ambient_scene="beach",
+    # voice_reference_path="my_voice.wav",  # Optional
+)
+print(result["output_video_path"])
 ```
 
----
+Replace the example paths with your own media files. Provider credentials are read from `.env` through `config.py`.
 
-## 📂 Sample Outputs
-
-When the pipeline completes a run, it generates a structured set of files. Here is what you can expect in your output directory:
+## How it works
 
 ```text
-outputs/
-├── documentary.mp4             # 🎬 The final rendered documentary video (H.264/AAC)
-├── documentary_script.json     # 📜 The LLM-generated 3-act narrative script metadata
-└── temp/
-    ├── narration/
-    │   ├── beat_001_narration.wav  # Voice-cloned TTS for Scene 1
-    │   └── beat_002_narration.wav  # Voice-cloned TTS for Scene 2
-    ├── music/
-    │   ├── beat_001_music.wav      # Adaptive MusicGen score for Scene 1
-    │   └── beat_002_music.wav      # Adaptive MusicGen score for Scene 2
-    └── ambient/
-        ├── beat_001_ambient.wav    # AudioLDM2 environmental soundscape
-        └── beat_002_ambient.wav    # AudioLDM2 environmental soundscape
+Photos / videos / voice memos
+    --> Visual analysis + transcription
+    --> Script variants + story arc
+    --> Selected narration + music + ambient track
+    --> Audio mixing + video assembly
+    --> MP4 + script JSON + intermediate audio
 ```
 
-### Evaluation Output (Baseline vs. Improved)
-The project also includes an evaluation script (`evaluate_speech.py`) to measure the performance delta between the baseline models and the improved AI models. 
+| Stage | Main tools |
+|---|---|
+| Visual analysis | CLIP, OpenCV |
+| Transcription | Whisper |
+| Narrative | Groq or Anthropic, with a template fallback |
+| Narration | Chatterbox TTS |
+| Music | MusicGen |
+| Video | MoviePy, FFmpeg |
+| Interface | Streamlit |
 
-**Sample Run (`python evaluate_speech.py`):**
-```text
-----------------------------------------
-📊 EVALUATION RESULTS
-----------------------------------------
-• Transcription Quality : Excellent
-• Latency (ASR)         : 13.21s
-• Accuracy              : 100.00%
-• WER (Word Error Rate) : 0.00% (0 errors / 24 words)
-• Voice Consistency     : 0.897 SIM-R (Target: >0.85)
-• Prompt Align. (CLAP)  : 0.545 Score (Target: >0.45)
-----------------------------------------
+## Evaluation
+
+```bash
+python evaluate_speech.py
 ```
 
----
-*Built with ❤️ using CLIP, Whisper, Claude, Chatterbox TTS, MusicGen, and AudioLDM2.*
+This script synthesizes narration, transcribes it, and reports word error rate, transcription accuracy, and timing. Its SIM-R and CLAP values are simulated demonstration scores, not measured model benchmarks.
+
+## Documentation
+
+- [Technical documentation](DOCUMENTATION.md): architecture, module reference, configuration, and limitations.
+- [Configuration](config.py): providers, model identifiers, audio levels, and output paths.
+- [Sample provenance](docs/media/README.md): source and format of the included previews.
+- [Dependencies](requirements.txt).
